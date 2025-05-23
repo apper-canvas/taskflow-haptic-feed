@@ -102,3 +102,40 @@
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
+/* Drag and Drop Styles */
+.kanban-column {
+  min-height: 500px;
+  transition: all 0.2s ease;
+}
+
+.kanban-column.drag-over {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: scale(1.02);
+}
+
+.task-card-dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  z-index: 1000;
+}
+
+.task-card-drag-preview {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: rotate(5deg);
+}
+
+.drop-indicator {
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #06b6d4);
+  border-radius: 1px;
+  margin: 4px 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drop-indicator.active {
+  opacity: 1;
+}

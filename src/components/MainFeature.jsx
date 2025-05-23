@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { format } from 'date-fns'
 import ApperIcon from './ApperIcon'
+import KanbanBoard from './KanbanBoard'
 
 function MainFeature() {
   const [tasks, setTasks] = useState([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [filter, setFilter] = useState('all')
+  const [viewMode, setViewMode] = useState('list') // 'list' or 'kanban'
+  
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -23,11 +26,22 @@ function MainFeature() {
       setTasks(JSON.parse(savedTasks))
     }
   }, [])
+  
+  // Load view mode from localStorage
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem('taskflow-view-mode')
+    if (savedViewMode) setViewMode(savedViewMode)
+  }, [])
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem('taskflow-tasks', JSON.stringify(tasks))
   }, [tasks])
+
+  // Save view mode to localStorage
+  useEffect(() => {
+    localStorage.setItem('taskflow-view-mode', viewMode)
+  }, [viewMode])
 
   const handleCreateTask = (e) => {
     e.preventDefault()
@@ -41,7 +55,9 @@ function MainFeature() {
       id: Date.now().toString(),
       ...newTask,
       status: 'pending',
+      kanbanStatus: 'todo',
       createdAt: new Date().toISOString(),
+      assignedTo: '',
       completed: false
     }
 
@@ -51,7 +67,8 @@ function MainFeature() {
       description: '',
       priority: 'medium',
       dueDate: '',
-      project: 'personal'
+      project: 'personal',
+      assignedTo: ''
     })
     setShowCreateForm(false)
     toast.success('Task created successfully!')
@@ -71,6 +88,16 @@ function MainFeature() {
   const deleteTask = (taskId) => {
     setTasks(prev => prev.filter(task => task.id !== taskId))
     toast.success('Task deleted successfully')
+  }
+
+  const updateTask = (taskId, updatedTask) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? updatedTask : task
+    ))
+  }
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode)
   }
 
   const getPriorityColor = (priority) => {
@@ -121,6 +148,24 @@ function MainFeature() {
     overdue: tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) < new Date()).length
   }
 
+  // If Kanban view is selected, render the Kanban board
+  if (viewMode === 'kanban') {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => handleViewModeChange('list')}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-200 dark:bg-surface-600 text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-300 dark:hover:bg-surface-500 transition-colors"
+          >
+            <ApperIcon name="List" className="w-4 h-4" />
+            Switch to List View
+          </button>
+        </div>
+        <KanbanBoard tasks={tasks} onTaskUpdate={updateTask} onTaskDelete={deleteTask} />
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
       {/* Stats Dashboard */}
@@ -168,7 +213,18 @@ function MainFeature() {
         <div className="p-6 sm:p-8 border-b border-surface-200 dark:border-surface-600">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-surface-800 dark:text-surface-100 mb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-2xl sm:text-3xl font-bold text-surface-800 dark:text-surface-100">
+                  Task Dashboard
+                </h3>
+                <button
+                  onClick={() => handleViewModeChange('kanban')}
+                  className="flex items-center gap-1 px-3 py-1 text-sm bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
+                >
+                  <ApperIcon name="KanbanSquare" className="w-4 h-4" />
+                  Kanban
+                </button>
+              </div>
                 Task Dashboard
               </h3>
               <p className="text-surface-600 dark:text-surface-400">
@@ -298,6 +354,19 @@ function MainFeature() {
                         <option value="learning">Learning</option>
                       </select>
                     </div>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
+                        Assigned To
+                      </label>
+                      <input
+                        type="text"
+                        value={newTask.assignedTo || ''}
+                        onChange={(e) => setNewTask(prev => ({ ...prev, assignedTo: e.target.value }))}
+                        placeholder="Enter email or name..."
+                        className="w-full px-4 py-3 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -426,6 +495,13 @@ function MainFeature() {
                                 <span>
                                   {format(new Date(task.dueDate), 'MMM dd, yyyy')}
                                 </span>
+                              </div>
+                            )}
+                            
+                            {task.assignedTo && (
+                              <div className="flex items-center space-x-1">
+                                <ApperIcon name="User" className="w-4 h-4" />
+                                <span>{task.assignedTo}</span>
                               </div>
                             )}
                           </div>

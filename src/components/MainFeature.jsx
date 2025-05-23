@@ -6,6 +6,7 @@ import ApperIcon from './ApperIcon'
 import KanbanBoard from './KanbanBoard'
 import TimeTracker from './TimeTracker'
 import ProjectSidebar from './ProjectSidebar'
+import TeamMemberSelector from './TeamMemberSelector'
 
 function MainFeature() {
   const [tasks, setTasks] = useState([])
@@ -19,7 +20,8 @@ function MainFeature() {
     priority: 'medium',
     dueDate: '',
     project: 'personal'
-  })
+  }),
+  const [editingTask, setEditingTask] = useState(null)
 
   // Load tasks from localStorage on component mount
   useEffect(() => {
@@ -60,7 +62,7 @@ function MainFeature() {
       kanbanStatus: 'todo',
       createdAt: new Date().toISOString(),
       assignedTo: '',
-      completed: false,
+      assignedMembers: newTask.assignedMembers || [],
       timeTracking: {
         totalTime: 0,
         isRunning: false,
@@ -75,7 +77,8 @@ function MainFeature() {
       priority: 'medium',
       dueDate: '',
       project: 'personal',
-      assignedTo: ''
+      assignedTo: '',
+      assignedMembers: []
     })
     setShowCreateForm(false)
     toast.success('Task created successfully!')
@@ -101,6 +104,25 @@ function MainFeature() {
     setTasks(prev => prev.map(task => 
       task.id === taskId ? updatedTask : task
     ))
+  }
+
+  const handleQuickAssign = (taskId, members) => {
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId) {
+        const updatedTask = { 
+          ...task, 
+          assignedMembers: members,
+          assignedTo: members.length > 0 ? members[0].name : ''
+        }
+        toast.success(`Task assigned to ${members.length} member(s)`)
+        return updatedTask
+      }
+      return task
+    }))
+  }
+
+  const handleEditTask = (task) => {
+    setEditingTask(task)
   }
 
   const handleViewModeChange = (mode) => {
@@ -368,12 +390,11 @@ function MainFeature() {
                     
                     <div>
                       <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
-                        Assigned To
+                        Assign Team Members
                       </label>
-                      <input
-                        type="text"
-                        value={newTask.assignedTo || ''}
-                        onChange={(e) => setNewTask(prev => ({ ...prev, assignedTo: e.target.value }))}
+                      <TeamMemberSelector
+                        selectedMembers={newTask.assignedMembers || []}
+                        onMembersChange={(members) => setNewTask(prev => ({ ...prev, assignedMembers: members }))}
                         placeholder="Enter email or name..."
                         className="w-full px-4 py-3 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                       />
@@ -509,10 +530,19 @@ function MainFeature() {
                               </div>
                             )}
                             
-                            {task.assignedTo && (
+                            {task.assignedMembers && task.assignedMembers.length > 0 && (
                               <div className="flex items-center space-x-1">
-                                <ApperIcon name="User" className="w-4 h-4" />
-                                <span>{task.assignedTo}</span>
+                                <ApperIcon name="Users" className="w-4 h-4" />
+                                <div className="flex items-center space-x-1">
+                                  {task.assignedMembers.slice(0, 2).map((member, idx) => (
+                                    <div key={member.id} className="w-6 h-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                      {member.avatar}
+                                    </div>
+                                  ))}
+                                  {task.assignedMembers.length > 2 && (
+                                    <span className="text-xs">+{task.assignedMembers.length - 2}</span>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -520,6 +550,18 @@ function MainFeature() {
                           {/* Actions */}
                           <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <motion.button
+                              onClick={() => handleEditTask(task)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200"
+                            >
+                              <ApperIcon name="Edit" className="w-4 h-4" />
+                            </motion.button>
+                            
+                            <motion.button
+                              onClick={() => {}}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
                               onClick={() => deleteTask(task.id)}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
@@ -530,6 +572,21 @@ function MainFeature() {
                           </div>
                         </div>
                       </div>
+                      {/* Quick Assignment */}
+                      <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-surface-600 dark:text-surface-400">Quick Assign:</span>
+                          <div className="flex-1 ml-3">
+                            <TeamMemberSelector
+                              selectedMembers={task.assignedMembers || []}
+                              onMembersChange={(members) => handleQuickAssign(task.id, members)}
+                              isMultiple={true}
+                              placeholder="Assign to team member..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+
 
                     {/* Time Tracker */}
                     <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
@@ -546,6 +603,87 @@ function MainFeature() {
           )}
         </div>
       </motion.div>
+      
+      {/* Edit Task Modal */}
+      <AnimatePresence>
+        {editingTask && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setEditingTask(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-surface-800 dark:text-surface-100">Edit Task</h3>
+                <button
+                  onClick={() => setEditingTask(null)}
+                  className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+                >
+                  <ApperIcon name="X" className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  updateTask(editingTask.id, editingTask)
+                  setEditingTask(null)
+                  toast.success('Task updated successfully!')
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
+                    Task Title
+                  </label>
+                  <input
+                    type="text"
+                    value={editingTask.title}
+                    onChange={(e) => setEditingTask(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
+                    Assigned Team Members
+                  </label>
+                  <TeamMemberSelector
+                    selectedMembers={editingTask.assignedMembers || []}
+                    onMembersChange={(members) => setEditingTask(prev => ({ ...prev, assignedMembers: members }))}
+                    isMultiple={true}
+                    placeholder="Select team members..."
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-xl transition-all duration-300"
+                  >
+                    Update Task
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingTask(null)}
+                    className="flex-1 px-6 py-3 bg-surface-200 dark:bg-surface-600 text-surface-700 dark:text-surface-300 font-semibold rounded-xl transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
         </div>
       </div>
     </div>

@@ -139,3 +139,15 @@
 .drop-indicator.active {
   opacity: 1;
 }
+
+/* Timer animations */
+@keyframes timer-pulse {
+  0%, 100% {
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.2);
+  }
+}
+
+.timer-active { animation: timer-pulse 2s ease-in-out infinite; }

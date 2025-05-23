@@ -4,6 +4,8 @@ import { toast } from 'react-toastify'
 import { format } from 'date-fns'
 import ApperIcon from './ApperIcon'
 import KanbanBoard from './KanbanBoard'
+import TimeTracker from './TimeTracker'
+import ProjectSidebar from './ProjectSidebar'
 
 function MainFeature() {
   const [tasks, setTasks] = useState([])
@@ -58,7 +60,12 @@ function MainFeature() {
       kanbanStatus: 'todo',
       createdAt: new Date().toISOString(),
       assignedTo: '',
-      completed: false
+      completed: false,
+      timeTracking: {
+        totalTime: 0,
+        isRunning: false,
+        startTime: null
+      }
     }
 
     setTasks(prev => [task, ...prev])
@@ -169,7 +176,12 @@ function MainFeature() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Stats Dashboard */}
-      <motion.div 
+      <div className="flex gap-6">
+        <div className="flex-1">
+          <ProjectSidebar tasks={tasks} />
+        </div>
+        <div className="flex-[3]">
+          <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
@@ -201,6 +213,7 @@ function MainFeature() {
           </motion.div>
         ))}
       </motion.div>
+
 
       {/* Main Task Management Interface */}
       <motion.div 
@@ -517,6 +530,14 @@ function MainFeature() {
                           </div>
                         </div>
                       </div>
+
+                    {/* Time Tracker */}
+                    <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+                      <TimeTracker
+                        task={task}
+                        onTaskUpdate={updateTask}
+                      />
+                    </div>
                     </div>
                   </motion.div>
                 ))}
@@ -525,6 +546,8 @@ function MainFeature() {
           )}
         </div>
       </motion.div>
+        </div>
+      </div>
     </div>
   )
 }

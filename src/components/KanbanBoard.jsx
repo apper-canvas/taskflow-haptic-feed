@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { format } from 'date-fns'
 import ApperIcon from './ApperIcon'
+import TimeTracker from './TimeTracker'
 
 const ItemTypes = {
   TASK: 'task'
@@ -230,6 +231,14 @@ function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
             >
               <ApperIcon name="Trash2" className="w-3 h-3" />
             </button>
+          </div>
+          
+          {/* Time Tracker */}
+          <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+            <TimeTracker
+              task={task}
+              onTaskUpdate={onEdit}
+            />
           </div>
         </>
       )}

@@ -225,8 +225,6 @@ function MainFeature() {
                   Kanban
                 </button>
               </div>
-                Task Dashboard
-              </h3>
               <p className="text-surface-600 dark:text-surface-400">
                 Manage your tasks with style and efficiency
               </p>

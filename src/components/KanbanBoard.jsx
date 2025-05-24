@@ -18,6 +18,16 @@ const COLUMNS = [
   { id: 'done', title: 'Done', color: 'green', icon: 'CheckCircle' }
 ]
 
+const getIconColor = (color) => {
+  const styles = {
+    slate: 'text-slate-500',
+    blue: 'text-blue-500',
+    yellow: 'text-yellow-500',
+    green: 'text-green-500'
+  }
+  return styles[color] || styles.slate
+}
+
 function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -266,16 +276,6 @@ function KanbanColumn({ column, tasks, onTaskDrop, onTaskEdit, onTaskDelete }) {
       blue: 'border-blue-200 dark:border-blue-600 bg-blue-50 dark:bg-blue-800/50',
       yellow: 'border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-800/50',
       green: 'border-green-200 dark:border-green-600 bg-green-50 dark:bg-green-800/50'
-    }
-    return styles[color] || styles.slate
-  }
-
-  const getIconColor = (color) => {
-    const styles = {
-      slate: 'text-slate-500',
-      blue: 'text-blue-500',
-      yellow: 'text-yellow-500',
-      green: 'text-green-500'
     }
     return styles[color] || styles.slate
   }

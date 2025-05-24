@@ -20,7 +20,7 @@ function MainFeature() {
     priority: 'medium',
     dueDate: '',
     project: 'personal'
-  }),
+  })
   const [editingTask, setEditingTask] = useState(null)
 
   // Load tasks from localStorage on component mount
@@ -559,9 +559,6 @@ function MainFeature() {
                             </motion.button>
                             
                             <motion.button
-                              onClick={() => {}}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
                               onClick={() => deleteTask(task.id)}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
@@ -571,30 +568,30 @@ function MainFeature() {
                             </motion.button>
                           </div>
                         </div>
-                      </div>
-                      {/* Quick Assignment */}
-                      <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-surface-600 dark:text-surface-400">Quick Assign:</span>
-                          <div className="flex-1 ml-3">
-                            <TeamMemberSelector
-                              selectedMembers={task.assignedMembers || []}
-                              onMembersChange={(members) => handleQuickAssign(task.id, members)}
-                              isMultiple={true}
-                              placeholder="Assign to team member..."
-                            />
+
+                        {/* Quick Assignment */}
+                        <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-surface-600 dark:text-surface-400">Quick Assign:</span>
+                            <div className="flex-1 ml-3">
+                              <TeamMemberSelector
+                                selectedMembers={task.assignedMembers || []}
+                                onMembersChange={(members) => handleQuickAssign(task.id, members)}
+                                isMultiple={true}
+                                placeholder="Assign to team member..."
+                              />
+                            </div>
                           </div>
                         </div>
+
+                        {/* Time Tracker */}
+                        <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+                          <TimeTracker
+                            task={task}
+                            onTaskUpdate={updateTask}
+                          />
+                        </div>
                       </div>
-
-
-                    {/* Time Tracker */}
-                    <div className="mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
-                      <TimeTracker
-                        task={task}
-                        onTaskUpdate={updateTask}
-                      />
-                    </div>
                     </div>
                   </motion.div>
                 ))}
